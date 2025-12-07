@@ -42,6 +42,8 @@
             "value": "/demo/button2"
         }'></div>
 
+        <button id="mic"></button>
+
         <div id='slider2' data-zombitron='{
             "type": "slider",
             "orientation" : "horizontal",
@@ -75,6 +77,77 @@
         }'></div>
     </div>
     <script type="text/javascript" src="/zombitron/client/zombiterface.js"></script>
+    <script>
+        addEventListener("DOMContentLoaded", () => {
+            let audioContext;
+            let mediaStream;
+            let processor;
+            let isMicOn = false;
+            let ws;
+            const micButton = document.getElementById("mic");
+            if (!micButton) {
+                console.error("Cannot find the mic!");
+            }
+
+            window.addEventListener("zombiterfaceready", (ev) => {
+                ws = window.zombitron.zombiterface.socket;
+                console.log("Socket ready");
+            });
+            micButton.onclick = (e) => {
+                isMicOn = !isMicOn;
+                if (isMicOn) {
+                    if (audioContext && mediaStream) {
+                        return;
+                    }
+                    // Check if the browser supports the required APIs
+                    if (!window.AudioContext ||
+                        !window.MediaStreamAudioSourceNode ||
+                        !window.AudioWorkletNode) {
+                        alert('Your browser does not support the required mic APIs');
+                        return;
+                    }
+
+                    // Request access to the user's microphone
+                    navigator
+                        .mediaDevices
+                        .getUserMedia({ audio: true })
+                        .then(stream => {
+                            micButton.classList.add("on");
+                            // Create the microphone stream
+                            audioContext = new AudioContext();
+                            mediaStream = audioContext
+                                .createMediaStreamSource(stream);
+                            processor = audioContext.createScriptProcessor(4096, 1, 1);
+                            processor.onaudioprocess = function (ev) {
+                                const channels = [];
+                                for (let channel = 0; channel < ev.inputBuffer.numberOfChannels; channel++) {
+                                    const b = ev.inputBuffer.getChannelData(channel);
+                                    channels[channel]=b;
+                                }
+                                ws.send(`{"data":{"mic": "${channels}"}}`);
+                            };
+                            mediaStream.connect(processor);
+                            mediaStream.connect(audioContext.destination);
+                        })
+                        .catch(err => {
+                            console.error("Cannot init media devices", err);
+                        });
+                } else {
+                    if (!audioContext) {
+                        return;
+                    }
+
+                    if (audioContext && mediaStream) {
+                        micButton.classList.remove("on");
+                        mediaStream.disconnect();
+                        audioContext.close();
+                    }
+                    mediaStream = undefined;
+                    audioContext = undefined;
+                }
+            };
+        });
+    </script>
 
     <style>
         #XY {
@@ -110,6 +183,20 @@
         #slider21 {
             top: 260px;
             left: 10px;
+        }
+
+        #mic {
+            height: 50px;
+            width: 50px;
+            position: absolute;
+            top: 200px;
+            left: 250px;
+            border-radius: 25px;
+            background-color: red;
+        }
+
+        #mic.on {
+            background-color: aqua;
         }
     </style>
 </body>

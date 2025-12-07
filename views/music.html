@@ -11,18 +11,22 @@
         "name": "logger"}'>
     <script type="text/javascript" src="/zombitron/client/zombiterface.js"></script>
     <script type="text/javascript">
+
+
+        let stream;
+        const normalize = (val, max, min) => (val - min) / (max - min);
         window.addEventListener('connection', function (event) {
             console.log("connection de " + event.detail);
         });
         window.addEventListener('disconnection', function (event) {
-            console.log("deconnection de " +event.detail);
+            console.log("deconnection de " + event.detail);
         });
         let pitchx = 0;
         window.addEventListener('/demo/x', function (event) {
             pitchx = parseFloat(event.detail) * 100 + 100;
             console.log(pitchx)
-           window.musiccontroller.custominstr[0].triggerAttackRelease(pitchx, "8n");
-           
+            window.musiccontroller.custominstr[0].triggerAttackRelease(pitchx, "8n");
+
         });
         let pitchy = 0;
 
@@ -30,7 +34,30 @@
             pitchy = parseFloat(event.detail) * 100 + 100;
             window.musiccontroller.custominstr[1].triggerAttackRelease(pitchy, "8n");
         });
-        
+
+        window.addEventListener('mic', function (event) {
+            const audioContext = new AudioContext();
+            const myArrayBuffer = audioContext.createBuffer(
+                2,
+                audioContext.sampleRate,
+                audioContext.sampleRate,
+            );
+            const a = event.detail;
+            const b = event.detail.split(",");
+
+            for (let channel = 0; channel < myArrayBuffer.numberOfChannels; channel++) {
+                // This gives us the actual ArrayBuffer that contains the data
+                const nowBuffering = myArrayBuffer.getChannelData(channel);
+                for (let i = 0; i < myArrayBuffer.length; i++) {
+                    nowBuffering[i] = a[i];
+                }
+            }
+            const source = audioContext.createBufferSource();
+            source.buffer = myArrayBuffer;
+            source.connect(audioContext.destination);
+            source.start();
+        });
+
         window.addEventListener('/demo/button1', function (event) {
             window.musiccontroller.seqInstruments[0].instrument.start();
         });
@@ -39,12 +66,8 @@
             window.musiccontroller.seqInstruments[1].instrument.start();
         });
 
-        window.addEventListener('funkySensorESP1', function (event) {
-            // window.musiccontroller.custominstr[4].start()
-        });
-
         window.addEventListener('/demo/slider1', function (event) {
-            
+
         });
         window.addEventListener('/demo/slider2', function (event) {
             console.log(event.type, event.detail);
@@ -53,12 +76,7 @@
             console.log(event.type, event.detail);
         });
 
-        let biofunky = 0; 
-        window.addEventListener('funkySensorESP1', function (event) { 
-            biofunky = parseFloat(event.detail) * 100 + 100; 
-            window.musiccontroller.custominstr[1].triggerAttack(biofunky, "8n"); 
-        });     
-            </script>
+    </script>
     <style>
         body {
             position: absolute;

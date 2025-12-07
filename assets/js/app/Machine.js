@@ -14,11 +14,13 @@ export default class Machine {
         this.custominstr[5] =  new Tone.Player ( "/assets/js/app/instruments/clap.wav" , ).toMaster();
         this.custominstr[6] =  new Tone.Player ( "/assets/js/app/instruments/konck.wav" , ).toMaster();
         
-        
-        
         this.feedbackDelay = new Tone.FeedbackDelay("8n", 0.5).toMaster();
         this.custominstr[7] =  new Tone.MembraneSynth().chain(this.feedbackDelay);
         this.custominstr[7].volume.value = -5
+
+        const meter = new Tone.Meter().toMaster();
+    
+        this.custominstr[8] = meter;
 
         this.options = {
             bpm: {

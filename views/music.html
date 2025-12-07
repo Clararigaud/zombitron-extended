@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music</title>
+</head>
+
+<body id="container" data-zombitron='{"name": "musicplayer"}'>
+    <script type="text/javascript" src="/zombitron/client/zombiterface.js"></script>
+
+    <script type="text/javascript">
+        // meduse 1 // drum player
+        // meduse 2 // drum player
+        // slug --- continus // some synth
+        // stretch continus x2 // some synth > pitch and effect
+        // squizz continuous > speed beat 
+        // old phone slider for pass band
+        // gyro // delay
+
+
+        window.addEventListener('meduse1', function (event) {
+            window.machine.meduse1.start();
+        });
+
+        window.addEventListener('meduse2', function (event) {
+            window.machine.meduse2.start();
+        });
+
+        window.addEventListener('slug', function (event) {
+            this.machine.slugPitch = event.detail * 100
+            this.machine.slug.triggerAttackRelease(this.machine.slugPitch, "8n");
+        });
+
+        window.addEventListener('potato-x', function (event) {
+            this.machine.potatoPitch = event.detail * 100 + 300;
+            this.machine.potato.triggerAttackRelease(this.machine.potatoPitch, "8n");
+            console.log(event.detail)
+        });
+
+        window.addEventListener('potato-y', function (event) {
+            this.machine.potatoEffect.feedback.value = event.detail;
+            console.log(event.detail)
+        });
+
+        window.addEventListener('sausage', function (event) {
+            Tone.Transport.bpm.rampTo(event.detail*10);
+            // window.machine.sausage.start();
+            this.machine.passband.frequency.value = event.detail*100;
+
+        });
+
+
+
+        // let pitchx = 0;
+        // window.addEventListener('/demo/x', function (event) {
+        //     pitchx = parseFloat(event.detail) * 100 + 100;
+        //     console.log(pitchx)
+        //     window.machine.custominstr[0].triggerAttackRelease(pitchx, "8n");
+        // });
+
+        // let pitchy = 0;
+        // window.addEventListener('/demo/y', function (event) {
+        //     pitchy = parseFloat(event.detail) * 200 + 100;
+        //     window.machine.custominstr[1].triggerAttackRelease(pitchy, "8n");
+        //     window.machine.custominstr[1].volume.value = -10
+        //     console.log(event.detail)
+        // });
+
+        // let note = 250;
+        // window.addEventListener('touchVal', function (event) {
+        //     console.log(event.type, event.detail);
+        //     if (event.detail > 0) {
+        //         window.machine.custominstr[1].triggerAttack(note, "8n");
+        //     } else {
+        //         window.machine.custominstr[1].triggerRelease()
+        //     }
+        // });
+
+        // window.addEventListener('/demo/button1', function (event) {
+        //     console.log(event.detail)
+        //     if (event.detail == true) {
+        //         window.machine.custominstr[4].start();
+        //     }
+        //     else {
+        //         window.machine.custominstr[4].stop();
+        //     }
+        // });
+
+        // window.addEventListener('/demo/button2', function (event) {
+        //     console.log(event.type, event.detail);
+        //     window.machine.custominstr[5].start();
+        // });
+
+        // let note2 = 250;
+        // window.addEventListener('/demo/slider1', function (event) {
+        //     window.machine.feedbackDelay.delaytime = 10*event.detail;
+        // });
+
+        // window.addEventListener('/demo/alpha', function (event) {
+        //     note2 = (event.detail + 1) * 100 + 200;
+        //     console.log(event.type, event.detail);
+        //      window.machine.custominstr[7].triggerAttackRelease(note2, "8n");
+        // });
+
+    </script>
+    <style>
+        body {
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            background-color: rgb(133, 253, 201);
+        }
+    </style>
+    <script type="module" src="/assets/js/app/main.js"></script>
+</body>
+
+</html>

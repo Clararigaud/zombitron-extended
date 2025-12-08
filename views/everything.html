@@ -119,12 +119,8 @@
                                 .createMediaStreamSource(stream);
                             processor = audioContext.createScriptProcessor(4096, 1, 1);
                             processor.onaudioprocess = function (ev) {
-                                const channels = [];
-                                for (let channel = 0; channel < ev.inputBuffer.numberOfChannels; channel++) {
-                                    const b = ev.inputBuffer.getChannelData(channel);
-                                    channels[channel]=b;
-                                }
-                                ws.send(`{"data":{"mic": "${channels}"}}`);
+                                const b = ev.inputBuffer.getChannelData(0);
+                                ws.send(`{"data":{"mic": "${b}"}}`);
                             };
                             mediaStream.connect(processor);
                             mediaStream.connect(audioContext.destination);

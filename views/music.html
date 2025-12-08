@@ -11,10 +11,15 @@
         "name": "logger"}'>
     <script type="text/javascript" src="/zombitron/client/zombiterface.js"></script>
     <script type="text/javascript">
+        const audioContext = new AudioContext();
+        // single channel buffer
+        const inputBuffer = audioContext.createBuffer(
+            1,
+            4096,
+            audioContext.sampleRate,
+        );
+        console.warn("Created audio buffer", audioContext.sampleRate);
 
-
-        let stream;
-        const normalize = (val, max, min) => (val - min) / (max - min);
         window.addEventListener('connection', function (event) {
             console.log("connection de " + event.detail);
         });
@@ -36,24 +41,21 @@
         });
 
         window.addEventListener('mic', function (event) {
-            const audioContext = new AudioContext();
-            const myArrayBuffer = audioContext.createBuffer(
-                2,
-                audioContext.sampleRate,
-                audioContext.sampleRate,
-            );
-            const a = event.detail;
-            const b = event.detail.split(",");
+            const a = event.detail.split(",");
+            if (a.length === 0) {
+                console.error("Invalid voice data");
+                return;
+            }
 
-            for (let channel = 0; channel < myArrayBuffer.numberOfChannels; channel++) {
-                // This gives us the actual ArrayBuffer that contains the data
-                const nowBuffering = myArrayBuffer.getChannelData(channel);
-                for (let i = 0; i < myArrayBuffer.length; i++) {
-                    nowBuffering[i] = a[i];
-                }
+            const nowBuffering = inputBuffer.getChannelData(0); //single channel
+            if (inputBuffer.length != a.length) {
+                console.warn("WARN: voice buffer differs in length. Got", a.length, ". Expected:", inputBuffer.length);
+            }
+            for (let i = 0; i < inputBuffer.length; i++) {
+                nowBuffering[i] = parseFloat(a[i]);
             }
             const source = audioContext.createBufferSource();
-            source.buffer = myArrayBuffer;
+            source.buffer = inputBuffer;
             source.connect(audioContext.destination);
             source.start();
         });
